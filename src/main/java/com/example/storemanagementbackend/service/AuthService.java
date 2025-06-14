@@ -5,11 +5,7 @@ import com.example.storemanagementbackend.dto.AuthResponse;
 import com.example.storemanagementbackend.dto.RegisterRequest;
 import com.example.storemanagementbackend.entity.User;
 import com.example.storemanagementbackend.repository.UserRepository;
-import com.example.storemanagementbackend.security.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +16,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -40,9 +34,7 @@ public class AuthService {
         
         userRepository.save(user);
         
-        var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
-                .token(jwtToken)
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .roles(user.getRoles())
@@ -50,26 +42,17 @@ public class AuthService {
     }
 
     public AuthResponse login(AuthRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-            
-            var user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            
-            var jwtToken = jwtService.generateToken(user);
-            return AuthResponse.builder()
-                    .token(jwtToken)
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .roles(user.getRoles())
-                    .build();
-        } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Invalid email or password");
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid password");
         }
+        
+        return AuthResponse.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(user.getRoles())
+                .build();
     }
 } 
