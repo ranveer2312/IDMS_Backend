@@ -54,7 +54,7 @@ public class AssetServiceImpl implements AssetService {
             existingAsset.setCategory(updatedAsset.getCategory());
             existingAsset.setAssignedTo(updatedAsset.getAssignedTo());
             existingAsset.setStatus(updatedAsset.getStatus());
-            existingAsset.setCondition(updatedAsset.getAssetcondition());
+            existingAsset.setAssetcondition(updatedAsset.getAssetcondition());
             return assetRepository.save(existingAsset);
         }).orElseThrow(() -> new RuntimeException("Asset not found with id " + id));
     }

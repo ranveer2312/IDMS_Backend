@@ -3,56 +3,74 @@ package com.example.storemanagementbackend.service;
 import com.example.storemanagementbackend.dto.AuthRequest;
 import com.example.storemanagementbackend.dto.AuthResponse;
 import com.example.storemanagementbackend.dto.RegisterRequest;
+import com.example.storemanagementbackend.entity.Role;
 import com.example.storemanagementbackend.entity.User;
+import com.example.storemanagementbackend.repository.RoleRepository;
 import com.example.storemanagementbackend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Transactional
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
-        }
+        Set<Role> roles = request.getRoles().stream()
+                .map(roleName -> roleRepository.findByName(roleName)
+                        .orElseGet(() -> roleRepository.save(Role.builder().name(roleName).build())))
+                .collect(Collectors.toSet());
 
-        var user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(request.getRoles());
-        
+        var user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .roles(roles)
+                .build();
         userRepository.save(user);
-        
+        var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
-                .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(user.getRoles())
+                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                .token(jwtToken)
                 .build();
     }
 
-    public AuthResponse login(AuthRequest request) {
+    public AuthResponse authenticate(AuthRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password");
-        }
-        
+                .orElseThrow();
+        var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
-                .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(user.getRoles())
+                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                .token(jwtToken)
                 .build();
     }
 } 
