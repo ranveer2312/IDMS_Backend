@@ -37,7 +37,6 @@ public class LabMaterialController {
     public ResponseEntity<LabMaterial> update(@PathVariable Long id, @RequestBody LabMaterial material) {
         return service.findById(id)
                 .map(existingMaterial -> {
-                    material.setId(id);
                     return ResponseEntity.ok(service.save(material));
                 })
                 .orElse(ResponseEntity.notFound().build());

@@ -35,7 +35,6 @@ public class SystemController {
     public ResponseEntity<System> update(@PathVariable Long id, @RequestBody System system) {
         return service.findById(id)
                 .map(existingSystem -> {
-                    system.setId(id);
                     return ResponseEntity.ok(service.save(system));
                 })
                 .orElse(ResponseEntity.notFound().build());

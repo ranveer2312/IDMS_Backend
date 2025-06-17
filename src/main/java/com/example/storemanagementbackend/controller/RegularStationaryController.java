@@ -35,7 +35,6 @@ public class RegularStationaryController {
     public ResponseEntity<RegularStationary> update(@PathVariable Long id, @RequestBody RegularStationary stationary) {
         return service.findById(id)
                 .map(existingStationary -> {
-                    stationary.setId(id);
                     return ResponseEntity.ok(service.save(stationary));
                 })
                 .orElse(ResponseEntity.notFound().build());

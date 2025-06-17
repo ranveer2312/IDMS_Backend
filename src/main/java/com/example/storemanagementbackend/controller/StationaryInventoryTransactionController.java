@@ -37,7 +37,6 @@ public class StationaryInventoryTransactionController {
     public ResponseEntity<StationaryInventoryTransaction> update(@PathVariable Long id, @RequestBody StationaryInventoryTransaction transaction) {
         return service.findById(id)
                 .map(existingTransaction -> {
-                    transaction.setId(id);
                     return ResponseEntity.ok(service.save(transaction));
                 })
                 .orElse(ResponseEntity.notFound().build());

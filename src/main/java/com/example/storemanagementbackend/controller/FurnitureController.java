@@ -35,7 +35,6 @@ public class FurnitureController {
     public ResponseEntity<Furniture> update(@PathVariable Long id, @RequestBody Furniture furniture) {
         return service.findById(id)
                 .map(existingFurniture -> {
-                    furniture.setId(id);
                     return ResponseEntity.ok(service.save(furniture));
                 })
                 .orElse(ResponseEntity.notFound().build());

@@ -35,7 +35,6 @@ public class PrinterController {
     public ResponseEntity<Printer> update(@PathVariable Long id, @RequestBody Printer printer) {
         return service.findById(id)
                 .map(existingPrinter -> {
-                    printer.setId(id);
                     return ResponseEntity.ok(service.save(printer));
                 })
                 .orElse(ResponseEntity.notFound().build());

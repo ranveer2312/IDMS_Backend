@@ -37,7 +37,6 @@ public class LabComponentController {
     public ResponseEntity<LabComponent> update(@PathVariable Long id, @RequestBody LabComponent component) {
         return service.findById(id)
                 .map(existingComponent -> {
-                    component.setId(id);
                     return ResponseEntity.ok(service.save(component));
                 })
                 .orElse(ResponseEntity.notFound().build());

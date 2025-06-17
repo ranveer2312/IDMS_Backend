@@ -35,7 +35,6 @@ public class LabInventoryTransactionController {
     public ResponseEntity<LabInventoryTransaction> update(@PathVariable Long id, @RequestBody LabInventoryTransaction transaction) {
         return service.findById(id)
                 .map(existingTransaction -> {
-                    transaction.setId(id);
                     return ResponseEntity.ok(service.save(transaction));
                 })
                 .orElse(ResponseEntity.notFound().build());
