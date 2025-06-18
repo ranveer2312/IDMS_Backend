@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/store/stationary/fixed")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class FixedStationaryController {
     @Autowired
     private FixedStationaryService service;

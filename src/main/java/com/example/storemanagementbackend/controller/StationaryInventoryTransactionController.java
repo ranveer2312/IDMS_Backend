@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/store/stationary/inventory")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class StationaryInventoryTransactionController {
     private final StationaryInventoryTransactionService service;
 

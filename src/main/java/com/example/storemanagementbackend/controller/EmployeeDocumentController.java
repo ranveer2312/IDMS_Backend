@@ -2,66 +2,109 @@ package com.example.storemanagementbackend.controller;
  
 import com.example.storemanagementbackend.dto.EmployeeDocumentDTO;
 import com.example.storemanagementbackend.model.EmployeeDocument;
-import com.example.storemanagementbackend.repository.EmploeeDocumentRepository;
+import com.example.storemanagementbackend.repository.EmployeeDocumentRepository;
 import com.example.storemanagementbackend.service.FileStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
  
 @RestController
-@RequestMapping("/api/employee-documents")
+@RequestMapping("/api/hr")
+@CrossOrigin(origins = "http://localhost:3000")
 public class EmployeeDocumentController {
  
     @Autowired
     private FileStorageService fileStorageService;
  
     @Autowired
-    private EmploeeDocumentRepository employeeDocumentRepository;
- 
-    @GetMapping
-    public List<EmployeeDocument> getAllDocuments() {
-        return employeeDocumentRepository.findAll();
+    private EmployeeDocumentRepository documentRepository;
+
+    // Get all documents
+    @GetMapping("/documents")
+    public ResponseEntity<List<EmployeeDocumentDTO>> getAllDocuments() {
+        List<EmployeeDocument> documents = documentRepository.findAll();
+        List<EmployeeDocumentDTO> documentDTOs = documents.stream()
+            .map(doc -> new EmployeeDocumentDTO(
+                doc.getId(),
+                doc.getEmployeeId(),
+                doc.getDocumentType(),
+                doc.getFileName(),
+                doc.getFileDownloadUri(),
+                doc.getFileType(),
+                doc.getSize()
+            ))
+            .collect(Collectors.toList());
+        return new ResponseEntity<>(documentDTOs, HttpStatus.OK);
     }
- 
-    @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDocument> getDocumentById(@PathVariable Long id) {
-        return employeeDocumentRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+    // Get documents by employee ID
+    @GetMapping("/documents/employee/{employeeId}")
+    public ResponseEntity<List<EmployeeDocumentDTO>> getDocumentsByEmployeeId(@PathVariable String employeeId) {
+        List<EmployeeDocument> documents = documentRepository.findByEmployeeId(employeeId);
+        List<EmployeeDocumentDTO> documentDTOs = documents.stream()
+            .map(doc -> new EmployeeDocumentDTO(
+                doc.getId(),
+                doc.getEmployeeId(),
+                doc.getDocumentType(),
+                doc.getFileName(),
+                doc.getFileDownloadUri(),
+                doc.getFileType(),
+                doc.getSize()
+            ))
+            .collect(Collectors.toList());
+        return new ResponseEntity<>(documentDTOs, HttpStatus.OK);
     }
- 
-    @PostMapping
-    public EmployeeDocument createDocument(@RequestBody EmployeeDocument document) {
-        return employeeDocumentRepository.save(document);
+
+    // Get documents by document type
+    @GetMapping("/documents/type/{documentType}")
+    public ResponseEntity<List<EmployeeDocumentDTO>> getDocumentsByType(@PathVariable String documentType) {
+        List<EmployeeDocument> documents = documentRepository.findByDocumentType(documentType.toUpperCase());
+        List<EmployeeDocumentDTO> documentDTOs = documents.stream()
+            .map(doc -> new EmployeeDocumentDTO(
+                doc.getId(),
+                doc.getEmployeeId(),
+                doc.getDocumentType(),
+                doc.getFileName(),
+                doc.getFileDownloadUri(),
+                doc.getFileType(),
+                doc.getSize()
+            ))
+            .collect(Collectors.toList());
+        return new ResponseEntity<>(documentDTOs, HttpStatus.OK);
     }
- 
-    @PutMapping("/{id}")
-    public ResponseEntity<EmployeeDocument> updateDocument(@PathVariable Long id, @RequestBody EmployeeDocument document) {
-        return employeeDocumentRepository.findById(id)
-                .map(existingDocument -> {
-                    document.setId(id);
-                    return ResponseEntity.ok(employeeDocumentRepository.save(document));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
- 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
-        return employeeDocumentRepository.findById(id)
-                .map(document -> {
-                    employeeDocumentRepository.delete(document);
-                    return ResponseEntity.ok().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+
+    // Get document by ID
+    @GetMapping("/documents/{id}")
+    public ResponseEntity<EmployeeDocumentDTO> getDocumentById(@PathVariable Long id) {
+        Optional<EmployeeDocument> document = documentRepository.findById(id);
+        if (document.isPresent()) {
+            EmployeeDocument doc = document.get();
+            EmployeeDocumentDTO dto = new EmployeeDocumentDTO(
+                doc.getId(),
+                doc.getEmployeeId(),
+                doc.getDocumentType(),
+                doc.getFileName(),
+                doc.getFileDownloadUri(),
+                doc.getFileType(),
+                doc.getSize()
+            );
+            return new ResponseEntity<>(dto, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
  
     @PostMapping("/upload/{docType}/{employeeId}")
@@ -80,15 +123,16 @@ public class EmployeeDocumentController {
         document.setSize(file.getSize());
         document.setFileDownloadUri(downloadUri);
  
-        EmployeeDocument savedDocument = employeeDocumentRepository.save(document);
+        document = documentRepository.save(document);
  
         EmployeeDocumentDTO dto = new EmployeeDocumentDTO(
-                savedDocument.getEmployeeId(),
-                savedDocument.getDocumentType(),
-                savedDocument.getFileName(),
-                savedDocument.getFileDownloadUri(),
-                savedDocument.getFileType(),
-                savedDocument.getSize()
+                document.getId(),
+                document.getEmployeeId(),
+                document.getDocumentType(),
+                document.getFileName(),
+                document.getFileDownloadUri(),
+                document.getFileType(),
+                document.getSize()
         );
  
         return ResponseEntity.ok(dto);
@@ -102,7 +146,7 @@ public class EmployeeDocumentController {
  
         String expectedFilePrefix = docType.toLowerCase();
  
-        Optional<EmployeeDocument> fileEntry = employeeDocumentRepository
+        Optional<EmployeeDocument> fileEntry = documentRepository
                 .findByEmployeeIdAndDocumentType(employeeId, docType.toUpperCase())
                 .stream()
                 .findFirst();
@@ -125,6 +169,27 @@ public class EmployeeDocumentController {
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
+    }
+
+    @DeleteMapping("/documents/{id}")
+    public ResponseEntity<HttpStatus> deleteDocument(@PathVariable Long id) {
+        Optional<EmployeeDocument> document = documentRepository.findById(id);
+        if (document.isPresent()) {
+            EmployeeDocument doc = document.get();
+            // Delete the physical file
+            try {
+                String fileName = doc.getDocumentType().toLowerCase() + "_" + doc.getFileName();
+                Path filePath = fileStorageService.getFileStorageLocation().resolve("employee_" + doc.getEmployeeId()).resolve(fileName);
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                // Log the error but continue with database deletion
+                e.printStackTrace();
+            }
+            // Delete from database
+            documentRepository.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
  

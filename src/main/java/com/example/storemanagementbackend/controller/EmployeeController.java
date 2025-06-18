@@ -7,12 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
  
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
  
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/employees") // Base path for all endpoints in this controller
-@CrossOrigin(origins = "*") // Allows requests from any origin (for frontend development)
+@CrossOrigin(origins = "http://localhost:3000") // Allows requests from the specified origin (for frontend development)
 public class EmployeeController {
  
     private final EmployeeService employeeService;

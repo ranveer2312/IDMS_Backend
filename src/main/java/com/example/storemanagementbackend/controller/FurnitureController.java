@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/store/assets/furniture")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class FurnitureController {
     @Autowired
     private FurnitureService service;

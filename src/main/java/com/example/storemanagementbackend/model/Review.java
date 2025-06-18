@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference; // Import for JSON se
  * Represents a performance review associated with a Performance record.
  */
 @Entity
-@Table(name = "performance_reviews") // You can keep this table name or change to 'reviews'
+@Table(name = "reviews") // Changed from "performance_reviews" to avoid conflict
 public class Review {
  
     @Id

@@ -52,6 +52,7 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
                 .goals(performanceReviewDTO.getGoals())
                 .feedback(performanceReviewDTO.getFeedback())
                 .achievements(performanceReviewDTO.getAchievements())
+                .reviewer(performanceReviewDTO.getReviewer())
                 .build();
  
         return performanceReviewRepository.save(performanceReview);
@@ -69,12 +70,12 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
  
     @Override
-    public List<PerformanceReview> getPerformanceReviewsByEmployeeId(Long employeeId) {
+    public List<PerformanceReview> getPerformanceReviewsByEmployeeId(String employeeId) {
         // Optionally, check if employee exists before fetching reviews for robustness.
-        if (!employeeRepository.existsById(employeeId)) {
+        if (!employeeRepository.findByEmployeeId(employeeId).isPresent()) {
             throw new NoSuchElementException("Employee not found with ID: " + employeeId + ". Cannot retrieve performance reviews.");
         }
-        return performanceReviewRepository.findByEmployeeId(employeeId);
+        return performanceReviewRepository.findByEmployee_EmployeeId(employeeId);
     }
  
     @Override

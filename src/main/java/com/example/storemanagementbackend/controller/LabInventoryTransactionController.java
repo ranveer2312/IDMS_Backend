@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/store/lab/inventory")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class LabInventoryTransactionController {
     @Autowired
     private LabInventoryTransactionService service;

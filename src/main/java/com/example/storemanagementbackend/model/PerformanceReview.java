@@ -20,9 +20,8 @@ public class PerformanceReview {
     private Long id; // Internal ID for the database
  
     // ManyToOne relationship: Many performance reviews can belong to one employee
-    // FetchType.LAZY means the Employee object will only be loaded from the DB when explicitly accessed.
-    // @JoinColumn specifies the foreign key column in the 'performance_reviews' table.
-    @ManyToOne(fetch = FetchType.LAZY)
+    // FetchType.EAGER ensures the Employee object is loaded immediately with the PerformanceReview.
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee; // The Employee this performance review is associated with
  
@@ -42,6 +41,9 @@ public class PerformanceReview {
  
     @Column(columnDefinition = "TEXT")
     private String achievements; // Key achievements during the review period
+
+    @Column(nullable = false)
+    private String reviewer;
 }
  
  

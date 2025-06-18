@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
  */
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/activities") // Base path for all endpoints in this controller
-@CrossOrigin(origins = "*") // Allows requests from any origin (for frontend development)
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true") // Allows requests from the specified origin with credentials
 public class WeeklyActivityController {
  
     private final WeeklyActivityService weeklyActivityService;

@@ -20,7 +20,7 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
      * @param employeeId The ID of the employee.
      * @return A list of PerformanceReview objects for the given employee.
      */
-    List<PerformanceReview> findByEmployeeId(Long employeeId);
+    List<PerformanceReview> findByEmployee_EmployeeId(String employeeId);
 }
  
  

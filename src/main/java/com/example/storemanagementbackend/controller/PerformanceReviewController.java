@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
  */
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/performance-reviews") // Base path for all endpoints in this controller
-@CrossOrigin(origins = "*") // Allows requests from any origin (for frontend development)
+@CrossOrigin(origins = "http://localhost:3000") // Allows requests from the specified origin
 public class PerformanceReviewController {
  
     private final PerformanceReviewService performanceReviewService;
@@ -80,7 +80,7 @@ public class PerformanceReviewController {
      * @return ResponseEntity with a list of performance reviews for the employee and HTTP status.
      */
     @GetMapping("/employee/{employeeId}") // Handles HTTP GET requests to /api/performance-reviews/employee/{employeeId}
-    public ResponseEntity<List<PerformanceReview>> getPerformanceReviewsByEmployeeId(@PathVariable Long employeeId) {
+    public ResponseEntity<List<PerformanceReview>> getPerformanceReviewsByEmployeeId(@PathVariable String employeeId) {
         try {
             List<PerformanceReview> reviews = performanceReviewService.getPerformanceReviewsByEmployeeId(employeeId);
             return new ResponseEntity<>(reviews, HttpStatus.OK);

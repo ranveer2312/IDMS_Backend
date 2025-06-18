@@ -36,7 +36,7 @@ public interface PerformanceReviewService {
      * @param employeeId The ID of the employee whose reviews are to be retrieved.
      * @return A list of PerformanceReview objects for the specified employee.
      */
-    List<PerformanceReview> getPerformanceReviewsByEmployeeId(Long employeeId);
+    List<PerformanceReview> getPerformanceReviewsByEmployeeId(String employeeId);
  
     /**
      * Updates an existing performance review identified by its ID.

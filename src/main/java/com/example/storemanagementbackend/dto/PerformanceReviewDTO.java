@@ -18,4 +18,5 @@ public class PerformanceReviewDTO {
     private String goals;
     private String feedback;
     private String achievements;
+    private String reviewer;
 } 
