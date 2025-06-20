@@ -37,7 +37,7 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
 
     private static final Set<String> ALLOWED_ROLES = Set.of(
-        "ADMIN", "STORE", "DATA_MANAGER", "HR", "FINANCE_MANAGER"
+        "ADMIN", "STORE", "DATA_MANAGER", "HR", "FINANCE"
     );
 
     public AuthResponse register(RegisterRequest request) {

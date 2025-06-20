@@ -3,10 +3,19 @@ package com.example.storemanagementbackend.controller;
 import com.example.storemanagementbackend.dto.AuthRequest;
 import com.example.storemanagementbackend.dto.AuthResponse;
 import com.example.storemanagementbackend.dto.RegisterRequest;
+import com.example.storemanagementbackend.model.Employee;
+import com.example.storemanagementbackend.repository.EmployeeRepository;
+import com.example.storemanagementbackend.repository.UserRepository;
 import com.example.storemanagementbackend.service.AuthService;
+import com.example.storemanagementbackend.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import com.example.storemanagementbackend.entity.User;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -14,6 +23,10 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
@@ -21,7 +34,33 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.authenticate(request));
+    public ResponseEntity<?> unifiedLogin(@RequestBody AuthRequest request) {
+        // 1. Try User table (admin, HR, etc.)
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            String token = jwtService.generateToken(user);
+            AuthResponse response = new AuthResponse();
+            response.setEmail(user.getEmail());
+            response.setRoles(user.getRoles().stream().map(r -> r.getName()).toList());
+            response.setToken(token);
+            return ResponseEntity.ok(response);
+        }
+        // 2. Try Employee table
+        Employee employee = employeeRepository.findByEmail(request.getEmail()).orElse(null);
+        if (employee != null && passwordEncoder.matches(request.getPassword(), employee.getPassword())) {
+            String token = jwtService.generateToken(employee); // Use the same method for Employee
+            AuthResponse response = new AuthResponse();
+            response.setEmployeeId(employee.getEmployeeId());
+            response.setEmployeeName(employee.getEmployeeName());
+            response.setEmail(employee.getEmail());
+            response.setDepartment(employee.getDepartment());
+            response.setPosition(employee.getPosition());
+            response.setStatus(employee.getStatus());
+            response.setRoles(List.of("EMPLOYEE"));
+            response.setToken(token);
+            return ResponseEntity.ok(response);
+        }
+        // 3. If neither, return error
+        return ResponseEntity.status(401).body("Invalid email or password");
     }
 } 

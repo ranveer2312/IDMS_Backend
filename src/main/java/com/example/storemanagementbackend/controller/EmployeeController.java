@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import com.example.storemanagementbackend.dto.EmployeeRegistrationRequest;
  
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/employees") // Base path for all endpoints in this controller
@@ -137,6 +138,46 @@ public class EmployeeController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
+    }
+ 
+    /**
+     * Endpoint to register a new employee account.
+     * Accepts employeeName, employeeId, email, password, phoneNumber, and roles (as ["EMPLOYEE"]).
+     * Uses the first role in the list for the Employee entity.
+     * @param request The registration request DTO.
+     * @return ResponseEntity with the created employee and HTTP status.
+     */
+    @PostMapping("/register")
+    public ResponseEntity<Employee> registerEmployee(@RequestBody com.example.storemanagementbackend.dto.RegisterRequest request) {
+        Employee employee = new Employee();
+        employee.setEmployeeName(request.getFullName() != null ? request.getFullName() : request.getUsername());
+        employee.setEmployeeId(request.getUsername()); // Assuming username is used as employeeId
+        employee.setEmail(request.getEmail());
+        employee.setPassword(request.getPassword());
+        employee.setPhoneNumber(null); // RegisterRequest does not have phoneNumber, set to null or extend DTO if needed
+        // Set role if Employee model supports it, otherwise ignore or extend Employee model
+        // employee.setRole(request.getRoles() != null && !request.getRoles().isEmpty() ? request.getRoles().get(0) : null);
+        Employee createdEmployee = employeeService.createEmployee(employee);
+        return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
+    }
+ 
+    /**
+     * HR endpoint to register a new employee account with all fields.
+     * @param request The registration request DTO.
+     * @return ResponseEntity with the created employee and HTTP status.
+     */
+    @PostMapping("/hr/register")
+    public ResponseEntity<Employee> hrRegisterEmployee(@RequestBody EmployeeRegistrationRequest request) {
+        Employee employee = new Employee();
+        employee.setEmployeeName(request.getEmployeeName());
+        employee.setEmployeeId(request.getEmployeeId());
+        employee.setEmail(request.getEmail());
+        employee.setPassword(request.getPassword());
+        employee.setPhoneNumber(request.getPhoneNumber());
+        // If Employee has a role field, set it here:
+        // employee.setRole(request.getRoles() != null && !request.getRoles().isEmpty() ? request.getRoles().get(0) : null);
+        Employee createdEmployee = employeeService.createEmployee(employee);
+        return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
     }
 }
  

@@ -2,6 +2,9 @@ package com.example.storemanagementbackend.controller; // Make sure package matc
  
 import com.example.storemanagementbackend.model.Attendance;
 import com.example.storemanagementbackend.repository.AttendanceRepository;
+import com.example.storemanagementbackend.dto.AttendanceWithEmployeeDTO;
+import com.example.storemanagementbackend.model.Employee;
+import com.example.storemanagementbackend.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +14,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
  
 @RestController
 @RequestMapping("/api/attendance")
@@ -21,11 +25,31 @@ public class AttendanceController {
     @Autowired
     private AttendanceRepository attendanceRepository;
  
+    @Autowired
+    private EmployeeRepository employeeRepository;
+ 
     // Endpoint to get all attendance records
     @GetMapping
-    public ResponseEntity<List<Attendance>> getAllAttendance() {
+    public ResponseEntity<List<AttendanceWithEmployeeDTO>> getAllAttendance() {
         List<Attendance> attendanceRecords = attendanceRepository.findAll();
-        return ResponseEntity.ok(attendanceRecords);
+        List<AttendanceWithEmployeeDTO> result = attendanceRecords.stream().map(att -> {
+            AttendanceWithEmployeeDTO dto = new AttendanceWithEmployeeDTO();
+            dto.setId(att.getId());
+            dto.setEmployeeId(att.getEmployeeId());
+            dto.setDate(att.getDate());
+            dto.setCheckInTime(att.getCheckInTime());
+            dto.setCheckOutTime(att.getCheckOutTime());
+            dto.setStatus(att.getStatus());
+            dto.setWorkHours(att.getWorkHours());
+            // Fetch employee details
+            Employee emp = employeeRepository.findByEmployeeId(att.getEmployeeId()).orElse(null);
+            if (emp != null) {
+                dto.setEmployeeName(emp.getEmployeeName());
+                dto.setDepartment(emp.getDepartment());
+            }
+            return dto;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
  
     // Endpoint to get attendance for a specific employee

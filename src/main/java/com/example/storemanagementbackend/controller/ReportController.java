@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import com.example.storemanagementbackend.dto.ReportWithEmployeeDTO;
+import com.example.storemanagementbackend.model.Employee;
+import com.example.storemanagementbackend.repository.EmployeeRepository;
+import java.util.stream.Collectors;
  
 @RestController
 @RequestMapping("/api/reports") // Base URL for all report-related endpoints
@@ -19,9 +23,12 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
  
+    @Autowired
+    private EmployeeRepository employeeRepository;
+ 
     // GET all reports or filter by type/subtype
     @GetMapping
-    public ResponseEntity<List<Report>> getAllReports(
+    public ResponseEntity<List<ReportWithEmployeeDTO>> getAllReports(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String subtype) {
  
@@ -35,7 +42,31 @@ public class ReportController {
         } else {
             reports = reportService.getAllReports();
         }
-        return ResponseEntity.ok(reports);
+        List<ReportWithEmployeeDTO> result = reports.stream().map(report -> {
+            ReportWithEmployeeDTO dto = new ReportWithEmployeeDTO();
+            dto.setId(report.getId());
+            dto.setType(report.getType());
+            dto.setSubtype(report.getSubtype());
+            dto.setTitle(report.getTitle());
+            dto.setContent(report.getContent());
+            dto.setDate(report.getDate());
+            dto.setStatus(report.getStatus());
+            dto.setSubmittedBy(report.getSubmittedBy());
+            dto.setAttachments(report.getAttachments());
+            // Map employee details if type is employee
+            if ("employee".equalsIgnoreCase(report.getType()) && report.getSubmittedBy() != null) {
+                Employee emp = employeeRepository.findByEmployeeId(report.getSubmittedBy()).orElse(null);
+                if (emp != null) {
+                    dto.setEmployeeName(emp.getEmployeeName());
+                    dto.setEmployeeId(emp.getEmployeeId());
+                    dto.setDepartment(emp.getDepartment());
+                } else {
+                    dto.setEmployeeId(report.getSubmittedBy());
+                }
+            }
+            return dto;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
  
     // GET a report by ID
