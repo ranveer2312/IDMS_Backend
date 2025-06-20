@@ -3,6 +3,7 @@ package com.example.storemanagementbackend.controller;
 import com.example.storemanagementbackend.dto.PerformanceReviewDTO;
 import com.example.storemanagementbackend.model.PerformanceReview;
 import com.example.storemanagementbackend.service.PerformanceReviewService;
+import com.example.storemanagementbackend.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +22,12 @@ import java.util.NoSuchElementException;
 public class PerformanceReviewController {
  
     private final PerformanceReviewService performanceReviewService;
+    private final EmployeeService employeeService;
  
-    @Autowired // Injects the PerformanceReviewService dependency
-    public PerformanceReviewController(PerformanceReviewService performanceReviewService) {
+    @Autowired // Injects the PerformanceReviewService and EmployeeService dependencies
+    public PerformanceReviewController(PerformanceReviewService performanceReviewService, EmployeeService employeeService) {
         this.performanceReviewService = performanceReviewService;
+        this.employeeService = employeeService;
     }
  
     /**
@@ -86,6 +89,22 @@ public class PerformanceReviewController {
             return new ResponseEntity<>(reviews, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Employee not found or no reviews for employee
+        }
+    }
+ 
+    /**
+     * Endpoint to get all performance reviews for a specific employee by numeric ID.
+     * @param id The internal numeric ID of the employee.
+     * @return ResponseEntity with a list of performance reviews for the employee and HTTP status.
+     */
+    @GetMapping("/employee/byId/{id}")
+    public ResponseEntity<List<PerformanceReview>> getPerformanceReviewsByEmployeeDbId(@PathVariable Long id) {
+        try {
+            var employee = employeeService.getEmployeeById(id);
+            var reviews = performanceReviewService.getPerformanceReviewsByEmployeeId(employee.getEmployeeId());
+            return new ResponseEntity<>(reviews, HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
  

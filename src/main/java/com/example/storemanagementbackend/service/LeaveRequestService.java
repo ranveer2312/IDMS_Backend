@@ -1,22 +1,24 @@
 package com.example.storemanagementbackend.service;
-
-import com.example.storemanagementbackend.model.LeaveRequest;
-
+ 
+import com.example.storemanagementbackend.dto.LeaveRequestDTO;
+ 
 import java.time.LocalDate;
 import java.util.List;
-
+ 
 public interface LeaveRequestService {
-    LeaveRequest submitLeaveRequest(LeaveRequest leaveRequest);
-    LeaveRequest getLeaveRequestById(Long id);
-    List<LeaveRequest> getAllLeaveRequests();
-    List<LeaveRequest> getLeaveRequestsByEmployeeId(Long employeeId);
-    List<LeaveRequest> getLeaveRequestsByStatus(String status);
-
-    // ✅ New Method
-    List<LeaveRequest> getNonApprovedLeaveRequests();
-
-    LeaveRequest approveLeaveRequest(Long id, String hrComments);
-    LeaveRequest rejectLeaveRequest(Long id, String hrComments);
+ 
+    // Leave request methods
+    LeaveRequestDTO submitLeaveRequest(LeaveRequestDTO dto);
+    LeaveRequestDTO getLeaveRequestById(Long id);
+    List<LeaveRequestDTO> getAllLeaveRequests();
+    List<LeaveRequestDTO> getLeaveRequestsByEmployeeId(String employeeId);
+    List<LeaveRequestDTO> getLeaveRequestsByStatus(String status);
+    List<LeaveRequestDTO> getNonApprovedLeaveRequests();
+    LeaveRequestDTO approveLeaveRequest(Long id, String hrComments);
+    LeaveRequestDTO rejectLeaveRequest(Long id, String hrComments);
     void deleteLeaveRequest(Long id);
     int calculateDays(LocalDate startDate, LocalDate endDate);
+    LeaveRequestDTO updateHoliday(Long id, LeaveRequestDTO dto);
 }
+ 
+ 

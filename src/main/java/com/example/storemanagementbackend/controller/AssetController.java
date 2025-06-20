@@ -1,6 +1,7 @@
 package com.example.storemanagementbackend.controller;
 import com.example.storemanagementbackend.model.Asset;
 import com.example.storemanagementbackend.service.AssetService;
+import com.example.storemanagementbackend.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
  
@@ -13,6 +14,9 @@ public class AssetController {
  
     @Autowired
     private AssetService assetService;
+ 
+    @Autowired
+    private EmployeeService employeeService;
  
     //  Get all assets
     @GetMapping
@@ -36,6 +40,13 @@ public class AssetController {
     @GetMapping("/search")
     public List<Asset> searchAssetsByAssignedTo(@RequestParam String keyword) {
         return assetService.searchAssetsByAssignedTo(keyword);
+    }
+ 
+    // Get all assets assigned to an employee by their numeric (internal) ID
+    @GetMapping("/employee/{id}")
+    public List<Asset> getAssetsByEmployeeDbId(@PathVariable Long id) {
+        var employee = employeeService.getEmployeeById(id);
+        return assetService.searchAssetsByAssignedTo(employee.getEmployeeId());
     }
  
     // Add a new asset

@@ -1,89 +1,100 @@
 package com.example.storemanagementbackend.controller;
-
-import com.example.storemanagementbackend.model.LeaveRequest;
+ 
+import com.example.storemanagementbackend.dto.LeaveRequestDTO;
 import com.example.storemanagementbackend.service.LeaveRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
+ 
 import java.util.List;
-
-/**
- * REST Controller for HR to manage employee leave requests.
- */
+ 
 @RestController
-@RequestMapping("/api/leave-requests")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:3000") // Adjust for your frontend URL
 public class LeaveRequestController {
-
+ 
     @Autowired
     private LeaveRequestService leaveRequestService;
-
-    /**
-     * Get a specific leave request by ID.
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<LeaveRequest> getLeaveRequestById(@PathVariable Long id) {
-        LeaveRequest request = leaveRequestService.getLeaveRequestById(id);
-        return new ResponseEntity<>(request, HttpStatus.OK);
+ 
+    // Leave Request Endpoints (Employee)
+    @PostMapping("/leave-requests/employee")
+    public ResponseEntity<LeaveRequestDTO> submitLeaveRequest(@RequestBody LeaveRequestDTO dto) {
+        LeaveRequestDTO saved = leaveRequestService.submitLeaveRequest(dto);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
-
-    /**
-     * Get all leave requests.
-     */
-    @GetMapping
-    public ResponseEntity<List<LeaveRequest>> getAllLeaveRequests() {
-        List<LeaveRequest> requests = leaveRequestService.getAllLeaveRequests();
-        return new ResponseEntity<>(requests, HttpStatus.OK);
+ 
+    @GetMapping("/leave-requests/employee/{employeeId}")
+    public ResponseEntity<List<LeaveRequestDTO>> getLeaveRequestsByEmployee(@PathVariable String employeeId) {
+        List<LeaveRequestDTO> requests = leaveRequestService.getLeaveRequestsByEmployeeId(employeeId);
+        return ResponseEntity.ok(requests);
     }
-
-    /**
-     * Get leave requests by status (e.g., PENDING, APPROVED, REJECTED).
-     */
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<LeaveRequest>> getLeaveRequestsByStatus(@PathVariable String status) {
-        List<LeaveRequest> requests = leaveRequestService.getLeaveRequestsByStatus(status);
-        return new ResponseEntity<>(requests, HttpStatus.OK);
+ 
+    // Leave Request Endpoints (HR/Admin)
+    @GetMapping("/leave-requests/hr/all")
+    public ResponseEntity<List<LeaveRequestDTO>> getAllLeaveRequests() {
+        return ResponseEntity.ok(leaveRequestService.getAllLeaveRequests());
     }
-
-    /**
-     * ✅ Get all leave requests that are NOT APPROVED (i.e., PENDING or REJECTED).
-     */
-    @GetMapping("/non-approved")
-    public ResponseEntity<List<LeaveRequest>> getNonApprovedLeaveRequests() {
-        List<LeaveRequest> requests = leaveRequestService.getNonApprovedLeaveRequests();
-        return new ResponseEntity<>(requests, HttpStatus.OK);
+ 
+    @GetMapping("/leave-requests/hr/status/{status}")
+    public ResponseEntity<List<LeaveRequestDTO>> getLeaveRequestsByStatus(@PathVariable String status) {
+        return ResponseEntity.ok(leaveRequestService.getLeaveRequestsByStatus(status));
     }
-
-    /**
-     * ✅ Approve a pending leave request.
-     */
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<LeaveRequest> approveLeaveRequest(
+ 
+    @GetMapping("/leave-requests/non-approved")
+    public ResponseEntity<List<LeaveRequestDTO>> getNonApprovedLeaveRequests() {
+        return ResponseEntity.ok(leaveRequestService.getNonApprovedLeaveRequests());
+    }
+ 
+    @PutMapping("/leave-requests/hr/{id}/approve")
+    public ResponseEntity<LeaveRequestDTO> approveLeaveRequest(
             @PathVariable Long id,
             @RequestParam(required = false) String hrComments) {
-        LeaveRequest updated = leaveRequestService.approveLeaveRequest(id, hrComments);
-        return new ResponseEntity<>(updated, HttpStatus.OK);
+        LeaveRequestDTO updated = leaveRequestService.approveLeaveRequest(id, hrComments);
+        return ResponseEntity.ok(updated);
     }
-
-    /**
-     * ✅ Reject a pending leave request.
-     */
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<LeaveRequest> rejectLeaveRequest(
+ 
+    @PutMapping("/leave-requests/hr/{id}/reject")
+    public ResponseEntity<LeaveRequestDTO> rejectLeaveRequest(
             @PathVariable Long id,
             @RequestParam(required = false) String hrComments) {
-        LeaveRequest updated = leaveRequestService.rejectLeaveRequest(id, hrComments);
-        return new ResponseEntity<>(updated, HttpStatus.OK);
+        LeaveRequestDTO updated = leaveRequestService.rejectLeaveRequest(id, hrComments);
+        return ResponseEntity.ok(updated);
     }
-
-    /**
-     * Delete a leave request.
-     */
-    @DeleteMapping("/{id}")
+ 
+    @DeleteMapping("/leave-requests/{id}")
     public ResponseEntity<Void> deleteLeaveRequest(@PathVariable Long id) {
         leaveRequestService.deleteLeaveRequest(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
+    }
+ 
+    // --- Holiday Leave Management (HR) ---
+    @GetMapping("/holidays")
+    public List<LeaveRequestDTO> getAllHolidays() {
+        return leaveRequestService.getLeaveRequestsByStatus("HOLIDAY");
+    }
+ 
+    @GetMapping("/holidays/{id}")
+    public LeaveRequestDTO getHolidayById(@PathVariable Long id) {
+        return leaveRequestService.getLeaveRequestById(id);
+    }
+ 
+    @PostMapping("/holidays")
+    public LeaveRequestDTO addHoliday(@RequestBody LeaveRequestDTO dto) {
+        dto.setStatus("HOLIDAY");
+        return leaveRequestService.submitLeaveRequest(dto);
+    }
+ 
+    @PutMapping("/holidays/{id}")
+    public LeaveRequestDTO updateHoliday(@PathVariable Long id, @RequestBody LeaveRequestDTO dto) {
+        dto.setStatus("HOLIDAY");
+        return leaveRequestService.updateHoliday(id, dto);
+    }
+ 
+    @DeleteMapping("/holidays/{id}")
+    public void deleteHoliday(@PathVariable Long id) {
+        leaveRequestService.deleteLeaveRequest(id);
     }
 }
+ 
+ 

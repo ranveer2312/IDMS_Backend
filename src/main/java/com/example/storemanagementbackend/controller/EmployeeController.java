@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
  
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
  
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/employees") // Base path for all endpoints in this controller
@@ -120,6 +122,20 @@ public class EmployeeController {
             return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+ 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
+        String email = loginData.get("email");
+        String password = loginData.get("password");
+        Optional<Employee> employeeOpt = employeeService.getAllEmployees().stream()
+            .filter(emp -> emp.getEmail().equals(email) && emp.getPassword().equals(password))
+            .findFirst();
+        if (employeeOpt.isPresent()) {
+            return ResponseEntity.ok(employeeOpt.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
     }
 }
