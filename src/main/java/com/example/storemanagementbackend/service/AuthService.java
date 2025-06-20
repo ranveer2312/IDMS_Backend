@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,27 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    private static final Set<String> ALLOWED_ROLES = Set.of(
+        "ADMIN", "STORE", "DATA_MANAGER", "HR", "FINANCE_MANAGER"
+    );
+
     public AuthResponse register(RegisterRequest request) {
+        // Only allow registration for allowed roles
+        for (String roleName : request.getRoles()) {
+            if (!ALLOWED_ROLES.contains(roleName)) {
+                throw new RuntimeException("Registration not allowed for role: " + roleName);
+            }
+            // Check if any user already has this role
+            Role role = roleRepository.findByName(roleName).orElse(null);
+            if (role != null) {
+                List<User> usersWithRole = userRepository.findAll().stream()
+                    .filter(u -> u.getRoles().stream().anyMatch(r -> r.getName().equals(roleName)))
+                    .collect(Collectors.toList());
+                if (!usersWithRole.isEmpty()) {
+                    throw new RuntimeException(roleName + " already has an account");
+                }
+            }
+        }
         Set<Role> roles = request.getRoles().stream()
                 .map(roleName -> roleRepository.findByName(roleName)
                         .orElseGet(() -> roleRepository.save(Role.builder().name(roleName).build())))
