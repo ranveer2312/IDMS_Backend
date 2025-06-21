@@ -42,10 +42,10 @@ public class AssetController {
         return assetService.searchAssetsByAssignedTo(keyword);
     }
  
-    // Get all assets assigned to an employee by their numeric (internal) ID
-    @GetMapping("/employee/{id}")
-    public List<Asset> getAssetsByEmployeeDbId(@PathVariable Long id) {
-        var employee = employeeService.getEmployeeById(id);
+    // Get all assets assigned to an employee by their employee ID
+    @GetMapping("/employee/{employeeId}")
+    public List<Asset> getAssetsByEmployeeId(@PathVariable String employeeId) {
+        var employee = employeeService.getEmployeeByEmployeeId(employeeId);
         return assetService.searchAssetsByAssignedTo(employee.getEmployeeId());
     }
  

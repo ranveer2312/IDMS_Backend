@@ -76,6 +76,37 @@ public class ReportController {
         return report.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+    
+    // GET reports by employee ID
+    @GetMapping("/employee/{employeeId}")
+    public ResponseEntity<List<ReportWithEmployeeDTO>> getReportsByEmployeeId(@PathVariable String employeeId) {
+        List<Report> reports = reportService.getReportsByEmployeeId(employeeId);
+        List<ReportWithEmployeeDTO> result = reports.stream().map(report -> {
+            ReportWithEmployeeDTO dto = new ReportWithEmployeeDTO();
+            dto.setId(report.getId());
+            dto.setType(report.getType());
+            dto.setSubtype(report.getSubtype());
+            dto.setTitle(report.getTitle());
+            dto.setContent(report.getContent());
+            dto.setDate(report.getDate());
+            dto.setStatus(report.getStatus());
+            dto.setSubmittedBy(report.getSubmittedBy());
+            dto.setAttachments(report.getAttachments());
+            // Map employee details if type is employee
+            if ("employee".equalsIgnoreCase(report.getType()) && report.getSubmittedBy() != null) {
+                Employee emp = employeeRepository.findByEmployeeId(report.getSubmittedBy()).orElse(null);
+                if (emp != null) {
+                    dto.setEmployeeName(emp.getEmployeeName());
+                    dto.setEmployeeId(emp.getEmployeeId());
+                    dto.setDepartment(emp.getDepartment());
+                } else {
+                    dto.setEmployeeId(report.getSubmittedBy());
+                }
+            }
+            return dto;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
  
     // CREATE a new report
     @PostMapping

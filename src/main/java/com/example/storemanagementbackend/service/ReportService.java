@@ -65,5 +65,9 @@ public class ReportService {
     public List<Report> getReportsByTypeAndSubtype(String type, String subtype) {
         return reportRepository.findByTypeAndSubtype(type, subtype);
     }
+    
+    public List<Report> getReportsByEmployeeId(String employeeId) {
+        return reportRepository.findBySubmittedBy(employeeId);
+    }
 }
  

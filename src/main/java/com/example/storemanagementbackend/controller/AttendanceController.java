@@ -3,6 +3,7 @@ package com.example.storemanagementbackend.controller; // Make sure package matc
 import com.example.storemanagementbackend.model.Attendance;
 import com.example.storemanagementbackend.repository.AttendanceRepository;
 import com.example.storemanagementbackend.dto.AttendanceWithEmployeeDTO;
+import com.example.storemanagementbackend.dto.EmployeeAttendanceStatusDTO;
 import com.example.storemanagementbackend.model.Employee;
 import com.example.storemanagementbackend.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,16 +62,37 @@ public class AttendanceController {
  
     // Endpoint to mark attendance (sign-in or sign-out)
     @PostMapping("/mark")
-    public ResponseEntity<Attendance> markAttendance(@RequestBody Attendance attendanceRequest) {
+    public ResponseEntity<?> markAttendance(@RequestBody Attendance attendanceRequest) {
         LocalDate today = LocalDate.now();
- 
+
         // Find existing record for today and employee
-        // Use the employeeId from the attendanceRequest
         Optional<Attendance> existingAttendanceOpt = attendanceRepository.findByEmployeeIdAndDate(
                 attendanceRequest.getEmployeeId(), today);
- 
+
+        // Check if attendance already exists for today - prevent multiple submissions
+        if (existingAttendanceOpt.isPresent()) {
+            Attendance existing = existingAttendanceOpt.get();
+            // If both check-in and check-out are already recorded, prevent any further updates
+            if (existing.getCheckInTime() != null && existing.getCheckOutTime() != null) {
+                return ResponseEntity.badRequest()
+                    .body("Attendance already completed for today. Cannot modify existing attendance record.");
+            }
+            
+            // If only check-in exists, allow check-out only
+            if (existing.getCheckInTime() != null && attendanceRequest.getCheckInTime() != null) {
+                return ResponseEntity.badRequest()
+                    .body("Check-in already recorded for today. Only check-out is allowed.");
+            }
+            
+            // If only check-out exists, allow check-in only
+            if (existing.getCheckOutTime() != null && attendanceRequest.getCheckOutTime() != null) {
+                return ResponseEntity.badRequest()
+                    .body("Check-out already recorded for today. Only check-in is allowed.");
+            }
+        }
+
         Attendance recordToSave;
- 
+
         if (existingAttendanceOpt.isPresent()) {
             recordToSave = existingAttendanceOpt.get();
         } else {
@@ -81,7 +103,7 @@ public class AttendanceController {
             recordToSave.setStatus("absent"); // Default status for a new day if no action taken
             recordToSave.setWorkHours(0.0);
         }
- 
+
         // Handle Sign In Logic
         // Only set checkInTime if it's provided in the request and not already set
         if (attendanceRequest.getCheckInTime() != null && recordToSave.getCheckInTime() == null) {
@@ -90,20 +112,20 @@ public class AttendanceController {
             // Work hours remain 0 until sign out
             recordToSave.setWorkHours(0.0);
         }
- 
+
         // Handle Sign Out Logic
         // Only set checkOutTime if it's provided in the request, and checkInTime
         // exists, and checkOutTime is not already set
         if (attendanceRequest.getCheckOutTime() != null && recordToSave.getCheckInTime() != null
                 && recordToSave.getCheckOutTime() == null) {
             recordToSave.setCheckOutTime(attendanceRequest.getCheckOutTime());
- 
+
             // Calculate work hours
             if (recordToSave.getCheckInTime() != null && recordToSave.getCheckOutTime() != null) {
                 long minutesWorked = ChronoUnit.MINUTES.between(recordToSave.getCheckInTime(),
                         recordToSave.getCheckOutTime());
                 double hoursWorked = minutesWorked / 60.0; // Convert minutes to hours
- 
+
                 // Determine status based on work hours (align with frontend logic)
                 if (hoursWorked < 4.5) { // Example threshold for absent
                     recordToSave.setStatus("absent");
@@ -116,17 +138,64 @@ public class AttendanceController {
                                                                                                // place
             }
         }
- 
+
         // Final check for status if somehow still null after sign-in attempt
         if (recordToSave.getStatus() == null && recordToSave.getCheckInTime() != null) {
             recordToSave.setStatus("present");
         }
- 
+
         // Save the updated/new attendance record
         Attendance savedAttendance = attendanceRepository.save(recordToSave);
- 
+
         // Return the saved object, which now has the updated ID, times, and status
         return ResponseEntity.ok(savedAttendance);
+    }
+
+    // Endpoint to get all employees with their attendance status for today
+    @GetMapping("/today-status")
+    public ResponseEntity<List<EmployeeAttendanceStatusDTO>> getTodayAttendanceStatus() {
+        LocalDate today = LocalDate.now();
+        List<Employee> allEmployees = employeeRepository.findAll();
+        
+        List<EmployeeAttendanceStatusDTO> result = allEmployees.stream().map(emp -> {
+            EmployeeAttendanceStatusDTO dto = new EmployeeAttendanceStatusDTO();
+            dto.setEmployeeId(emp.getEmployeeId());
+            dto.setEmployeeName(emp.getEmployeeName());
+            dto.setDepartment(emp.getDepartment());
+            dto.setEmail(emp.getEmail());
+            dto.setDate(today);
+            
+            // Check if attendance exists for today
+            Optional<Attendance> todayAttendance = attendanceRepository.findByEmployeeIdAndDate(emp.getEmployeeId(), today);
+            
+            if (todayAttendance.isPresent()) {
+                Attendance attendance = todayAttendance.get();
+                dto.setCheckInTime(attendance.getCheckInTime());
+                dto.setCheckOutTime(attendance.getCheckOutTime());
+                dto.setStatus(attendance.getStatus());
+                dto.setWorkHours(attendance.getWorkHours());
+                
+                // Determine attendance status
+                if (attendance.getCheckInTime() != null && attendance.getCheckOutTime() != null) {
+                    dto.setAttendanceStatus("completed");
+                } else if (attendance.getCheckInTime() != null) {
+                    dto.setAttendanceStatus("checkin_only");
+                } else {
+                    dto.setAttendanceStatus("not_marked");
+                }
+            } else {
+                // No attendance record for today
+                dto.setCheckInTime(null);
+                dto.setCheckOutTime(null);
+                dto.setStatus("not_marked");
+                dto.setWorkHours(0.0);
+                dto.setAttendanceStatus("not_marked");
+            }
+            
+            return dto;
+        }).collect(Collectors.toList());
+        
+        return ResponseEntity.ok(result);
     }
 }
  
