@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.storemanagementbackend.service.FileStorageService;
  
 import java.time.LocalDate;
 import java.util.List;
@@ -20,10 +23,12 @@ import com.example.storemanagementbackend.dto.EmployeeRegistrationRequest;
 public class EmployeeController {
  
     private final EmployeeService employeeService;
+    private final FileStorageService fileStorageService;
  
     @Autowired // Injects the EmployeeService dependency
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, FileStorageService fileStorageService) {
         this.employeeService = employeeService;
+        this.fileStorageService = fileStorageService;
     }
  
     /**
@@ -32,8 +37,22 @@ public class EmployeeController {
      * @return ResponseEntity with the created employee and HTTP status.
      */
     @PostMapping // Handles HTTP POST requests to /api/employees
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
+    public ResponseEntity<Employee> createEmployee(@RequestParam("employee") String employeeStr, @RequestParam(name= "photo", required = false) MultipartFile photo) {
         // @RequestBody maps the JSON request body to the Employee object
+        Employee employee;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            employee = objectMapper.readValue(employeeStr, Employee.class);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (photo != null && !photo.isEmpty()) {
+            String fileName = fileStorageService.storeFile(photo);
+            String fileDownloadUri = "/api/employees/download/" + fileName;
+            employee.setProfilePhotoUrl(fileDownloadUri);
+        }
+
         Employee createdEmployee = employeeService.createEmployee(employee);
         return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED); // Returns 201 Created status
     }
@@ -178,6 +197,14 @@ public class EmployeeController {
         // employee.setRole(request.getRoles() != null && !request.getRoles().isEmpty() ? request.getRoles().get(0) : null);
         Employee createdEmployee = employeeService.createEmployee(employee);
         return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/download/{fileName:.+}")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadFile(@PathVariable String fileName) {
+        org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(fileName);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 }
  

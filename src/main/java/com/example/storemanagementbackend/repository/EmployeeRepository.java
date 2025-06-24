@@ -16,7 +16,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
  
     // Custom method to find an employee by email (assuming email is also unique)
     Optional<Employee> findByEmail(String email);
-    
+    Optional<Employee> findByEmailAndPassword(String email, String password);
+ 
+   
+ 
     // Custom method to find employees by department
     List<Employee> findByDepartment(String department);
 }

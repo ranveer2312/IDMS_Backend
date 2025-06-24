@@ -113,7 +113,11 @@ public class EmployeeDocumentController {
             @PathVariable String employeeId,
             @RequestParam("file") MultipartFile file) {
  
-        String downloadUri = fileStorageService.storeFile(file, employeeId, docType);
+        String fileName = fileStorageService.storeFile(file);
+        String downloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/hr/download/")
+                .path(fileName)
+                .toUriString();
  
         EmployeeDocument document = new EmployeeDocument();
         document.setEmployeeId(employeeId);
@@ -138,25 +142,12 @@ public class EmployeeDocumentController {
         return ResponseEntity.ok(dto);
     }
  
-    @GetMapping("/download/{employeeId}/{docType}")
+    @GetMapping("/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadDocument(
-            @PathVariable String employeeId,
-            @PathVariable String docType,
+            @PathVariable String fileName,
             HttpServletRequest request) {
  
-        String expectedFilePrefix = docType.toLowerCase();
- 
-        Optional<EmployeeDocument> fileEntry = documentRepository
-                .findByEmployeeIdAndDocumentType(employeeId, docType.toUpperCase())
-                .stream()
-                .findFirst();
- 
-        if (fileEntry.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
- 
-        String fullFileName = expectedFilePrefix + "_" + fileEntry.get().getFileName();
-        Resource resource = fileStorageService.loadFileAsResource(employeeId, fullFileName);
+        Resource resource = fileStorageService.loadFileAsResource(fileName);
  
         String contentType = null;
         try {
@@ -175,17 +166,6 @@ public class EmployeeDocumentController {
     public ResponseEntity<HttpStatus> deleteDocument(@PathVariable Long id) {
         Optional<EmployeeDocument> document = documentRepository.findById(id);
         if (document.isPresent()) {
-            EmployeeDocument doc = document.get();
-            // Delete the physical file
-            try {
-                String fileName = doc.getDocumentType().toLowerCase() + "_" + doc.getFileName();
-                Path filePath = fileStorageService.getFileStorageLocation().resolve("employee_" + doc.getEmployeeId()).resolve(fileName);
-                Files.deleteIfExists(filePath);
-            } catch (IOException e) {
-                // Log the error but continue with database deletion
-                e.printStackTrace();
-            }
-            // Delete from database
             documentRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }

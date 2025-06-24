@@ -5,8 +5,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
  
 public interface FileStorageService {
-    String storeFile(MultipartFile file, String employeeId, String docType);
-    Resource loadFileAsResource(String employeeId, String fileName);
-    Path getFileStorageLocation();
+    String storeFile(MultipartFile file);
+    Resource loadFileAsResource(String fileName);
+    Path getFileStorageLocation(String uploadDir);
 }
  
