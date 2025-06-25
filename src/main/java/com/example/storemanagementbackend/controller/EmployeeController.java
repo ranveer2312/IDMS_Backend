@@ -24,11 +24,13 @@ public class EmployeeController {
  
     private final EmployeeService employeeService;
     private final FileStorageService fileStorageService;
+    private final ObjectMapper objectMapper;
  
-    @Autowired // Injects the EmployeeService dependency
-    public EmployeeController(EmployeeService employeeService, FileStorageService fileStorageService) {
+    @Autowired // Injects the dependencies
+    public EmployeeController(EmployeeService employeeService, FileStorageService fileStorageService, ObjectMapper objectMapper) {
         this.employeeService = employeeService;
         this.fileStorageService = fileStorageService;
+        this.objectMapper = objectMapper;
     }
  
     /**
@@ -41,9 +43,9 @@ public class EmployeeController {
         // @RequestBody maps the JSON request body to the Employee object
         Employee employee;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             employee = objectMapper.readValue(employeeStr, Employee.class);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -101,16 +103,29 @@ public class EmployeeController {
     /**
      * Endpoint to update an existing employee record.
      * @param id The internal ID of the employee to update.
-     * @param employeeDetails The updated employee details.
+     * @param employeeStr The updated employee details as JSON string.
+     * @param photo Optional updated profile photo.
      * @return ResponseEntity with the updated employee and HTTP status.
      */
     @PutMapping("/{id}") // Handles HTTP PUT requests to /api/employees/{id}
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
+    public ResponseEntity<Employee> updateEmployee(
+            @PathVariable Long id,
+            @RequestParam("employee") String employeeStr,
+            @RequestParam(name = "photo", required = false) MultipartFile photo) {
         try {
+            Employee employeeDetails = objectMapper.readValue(employeeStr, Employee.class);
+            
+            if (photo != null && !photo.isEmpty()) {
+                String fileName = fileStorageService.storeFile(photo);
+                String fileDownloadUri = "/api/employees/download/" + fileName;
+                employeeDetails.setProfilePhotoUrl(fileDownloadUri);
+            }
+            
             Employee updatedEmployee = employeeService.updateEmployee(id, employeeDetails);
-            return new ResponseEntity<>(updatedEmployee, HttpStatus.OK); // Returns 200 OK
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Returns 404 Not Found
+            return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
  
