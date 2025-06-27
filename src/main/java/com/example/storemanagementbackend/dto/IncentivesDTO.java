@@ -8,6 +8,7 @@ public class IncentivesDTO {
     private BigDecimal amount;
     private LocalDate date;
     private String description;
+    private String recipient;
 
     public Long getId() {
         return id;
@@ -39,5 +40,13 @@ public class IncentivesDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 } 

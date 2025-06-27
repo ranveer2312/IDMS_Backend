@@ -37,6 +37,7 @@ public class LabInstrumentController {
     public ResponseEntity<LabInstrument> update(@PathVariable Long id, @RequestBody LabInstrument instrument) {
         return service.findById(id)
                 .map(existingInstrument -> {
+                    instrument.setId(id);
                     return ResponseEntity.ok(service.save(instrument));
                 })
                 .orElse(ResponseEntity.notFound().build());

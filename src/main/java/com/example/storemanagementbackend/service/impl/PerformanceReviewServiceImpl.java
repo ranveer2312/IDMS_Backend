@@ -80,36 +80,40 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
  
     @Override
     @Transactional
-    public PerformanceReview updatePerformanceReview(Long id, PerformanceReview performanceReviewDetails) {
+    public PerformanceReview updatePerformanceReview(Long id, PerformanceReviewDTO performanceReviewDTO) {
         PerformanceReview existingReview = performanceReviewRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Performance Review not found with id: " + id));
- 
-        // Update fields based on the provided details.
-        // Null checks ensure we only update fields that are explicitly provided in the request.
-        if (performanceReviewDetails.getReviewStatus() != null) {
-            existingReview.setReviewStatus(performanceReviewDetails.getReviewStatus());
+
+        // Fetch employee by employeeId from DTO
+        if (performanceReviewDTO.getEmployeeId() != null) {
+            Employee employee = employeeRepository.findByEmployeeId(performanceReviewDTO.getEmployeeId())
+                .orElseThrow(() -> new NoSuchElementException("Employee not found with employeeId: " + performanceReviewDTO.getEmployeeId()));
+            existingReview.setEmployee(employee);
         }
-        if (performanceReviewDetails.getRating() != null) {
-            existingReview.setRating(performanceReviewDetails.getRating());
+        if (performanceReviewDTO.getReviewStatus() != null) {
+            existingReview.setReviewStatus(performanceReviewDTO.getReviewStatus());
         }
-        if (performanceReviewDetails.getLastReviewDate() != null) {
-            existingReview.setLastReviewDate(performanceReviewDetails.getLastReviewDate());
+        if (performanceReviewDTO.getRating() != null) {
+            existingReview.setRating(performanceReviewDTO.getRating());
         }
-        if (performanceReviewDetails.getNextReviewDate() != null) {
-            existingReview.setNextReviewDate(performanceReviewDetails.getNextReviewDate());
+        if (performanceReviewDTO.getLastReviewDate() != null) {
+            existingReview.setLastReviewDate(performanceReviewDTO.getLastReviewDate());
         }
-        if (performanceReviewDetails.getGoals() != null) {
-            existingReview.setGoals(performanceReviewDetails.getGoals());
+        if (performanceReviewDTO.getNextReviewDate() != null) {
+            existingReview.setNextReviewDate(performanceReviewDTO.getNextReviewDate());
         }
-        if (performanceReviewDetails.getFeedback() != null) {
-            existingReview.setFeedback(performanceReviewDetails.getFeedback());
+        if (performanceReviewDTO.getGoals() != null) {
+            existingReview.setGoals(performanceReviewDTO.getGoals());
         }
-        if (performanceReviewDetails.getAchievements() != null) {
-            existingReview.setAchievements(performanceReviewDetails.getAchievements());
+        if (performanceReviewDTO.getFeedback() != null) {
+            existingReview.setFeedback(performanceReviewDTO.getFeedback());
         }
-        // Note: The employee associated with the review is typically not changed during an update.
-        // If it needs to be changed, additional logic to validate and set the new employee would be required.
- 
+        if (performanceReviewDTO.getAchievements() != null) {
+            existingReview.setAchievements(performanceReviewDTO.getAchievements());
+        }
+        if (performanceReviewDTO.getReviewer() != null) {
+            existingReview.setReviewer(performanceReviewDTO.getReviewer());
+        }
         return performanceReviewRepository.save(existingReview);
     }
  

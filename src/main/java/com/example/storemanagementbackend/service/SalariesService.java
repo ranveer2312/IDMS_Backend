@@ -18,6 +18,7 @@ public class SalariesService {
 
     public SalariesDTO createSalary(SalariesDTO dto) {
         Salaries salary = new Salaries();
+        salary.setEmployeeName(dto.getEmployeeName());
         salary.setAmount(dto.getAmount());
         salary.setDate(dto.getDate());
         salary.setDescription(dto.getDescription());
@@ -33,6 +34,7 @@ public class SalariesService {
     public SalariesDTO updateSalary(Long id, SalariesDTO dto) {
         Salaries salary = salariesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Salary not found"));
+        salary.setEmployeeName(dto.getEmployeeName());
         salary.setAmount(dto.getAmount());
         salary.setDate(dto.getDate());
         salary.setDescription(dto.getDescription());
@@ -46,6 +48,7 @@ public class SalariesService {
     private SalariesDTO convertToDTO(Salaries salary) {
         SalariesDTO dto = new SalariesDTO();
         dto.setId(salary.getId());
+        dto.setEmployeeName(salary.getEmployeeName());
         dto.setAmount(salary.getAmount());
         dto.setDate(salary.getDate());
         dto.setDescription(salary.getDescription());

@@ -24,5 +24,15 @@ public class LeaveRequestDTO {
     private String day;
     private String type;
     private String coverage;
+    private String department;
+    private String email;
+    private String phoneNumber;
+    private String bloodGroup;
+    private String profilePhotoUrl;
+    private String currentAddress;
+    private String permanentAddress;
+    private String position;
+    private LocalDate joiningDate;
+    private LocalDate relievingDate;
 }
  

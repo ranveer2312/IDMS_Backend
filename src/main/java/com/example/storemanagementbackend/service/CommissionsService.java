@@ -21,6 +21,7 @@ public class CommissionsService {
         commission.setAmount(dto.getAmount());
         commission.setDate(dto.getDate());
         commission.setDescription(dto.getDescription());
+        commission.setRecipient(dto.getRecipient());
         return convertToDTO(commissionsRepository.save(commission));
     }
 
@@ -36,6 +37,7 @@ public class CommissionsService {
         commission.setAmount(dto.getAmount());
         commission.setDate(dto.getDate());
         commission.setDescription(dto.getDescription());
+        commission.setRecipient(dto.getRecipient());
         return convertToDTO(commissionsRepository.save(commission));
     }
 
@@ -49,6 +51,7 @@ public class CommissionsService {
         dto.setAmount(commission.getAmount());
         dto.setDate(commission.getDate());
         dto.setDescription(commission.getDescription());
+        dto.setRecipient(commission.getRecipient());
         return dto;
     }
 } 

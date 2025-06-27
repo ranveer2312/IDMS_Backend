@@ -41,10 +41,10 @@ public interface PerformanceReviewService {
     /**
      * Updates an existing performance review identified by its ID.
      * @param id The ID of the performance review to update.
-     * @param performanceReviewDetails The PerformanceReview object with updated details.
+     * @param performanceReviewDTO The PerformanceReviewDTO object with updated details.
      * @return The updated PerformanceReview object if found, throws NoSuchElementException otherwise.
      */
-    PerformanceReview updatePerformanceReview(Long id, PerformanceReview performanceReviewDetails);
+    PerformanceReview updatePerformanceReview(Long id, PerformanceReviewDTO performanceReviewDTO);
  
     /**
      * Deletes a performance review by its ID.

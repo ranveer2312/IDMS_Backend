@@ -111,13 +111,13 @@ public class PerformanceReviewController {
     /**
      * Endpoint to update an existing performance review.
      * @param id The ID of the performance review to update.
-     * @param performanceReviewDetails The PerformanceReview object with updated details.
+     * @param performanceReviewDTO The PerformanceReviewDTO object with updated details.
      * @return ResponseEntity with the updated performance review and HTTP status.
      */
     @PutMapping("/{id}") // Handles HTTP PUT requests to /api/performance-reviews/{id}
-    public ResponseEntity<PerformanceReview> updatePerformanceReview(@PathVariable Long id, @RequestBody PerformanceReview performanceReviewDetails) {
+    public ResponseEntity<PerformanceReview> updatePerformanceReview(@PathVariable Long id, @RequestBody PerformanceReviewDTO performanceReviewDTO) {
         try {
-            PerformanceReview updatedReview = performanceReviewService.updatePerformanceReview(id, performanceReviewDetails);
+            PerformanceReview updatedReview = performanceReviewService.updatePerformanceReview(id, performanceReviewDTO);
             return new ResponseEntity<>(updatedReview, HttpStatus.OK); // Returns 200 OK
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Returns 404 Not Found

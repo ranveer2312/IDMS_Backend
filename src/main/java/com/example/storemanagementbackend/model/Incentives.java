@@ -20,6 +20,8 @@ public class Incentives {
     @Column(length = 1000)
     private String description;
 
+    private String recipient;
+
     // Getters
     public Long getId() {
         return id;
@@ -37,6 +39,10 @@ public class Incentives {
         return description;
     }
 
+    public String getRecipient() {
+        return recipient;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -52,5 +58,9 @@ public class Incentives {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 } 

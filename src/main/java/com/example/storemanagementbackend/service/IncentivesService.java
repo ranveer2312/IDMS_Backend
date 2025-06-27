@@ -21,6 +21,7 @@ public class IncentivesService {
         incentive.setAmount(dto.getAmount());
         incentive.setDate(dto.getDate());
         incentive.setDescription(dto.getDescription());
+        incentive.setRecipient(dto.getRecipient());
         return convertToDTO(incentivesRepository.save(incentive));
     }
 
@@ -36,6 +37,7 @@ public class IncentivesService {
         incentive.setAmount(dto.getAmount());
         incentive.setDate(dto.getDate());
         incentive.setDescription(dto.getDescription());
+        incentive.setRecipient(dto.getRecipient());
         return convertToDTO(incentivesRepository.save(incentive));
     }
 
@@ -49,6 +51,7 @@ public class IncentivesService {
         dto.setAmount(incentive.getAmount());
         dto.setDate(incentive.getDate());
         dto.setDescription(incentive.getDescription());
+        dto.setRecipient(incentive.getRecipient());
         return dto;
     }
 } 

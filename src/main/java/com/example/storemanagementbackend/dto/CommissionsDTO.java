@@ -8,6 +8,7 @@ public class CommissionsDTO {
     private BigDecimal amount;
     private LocalDate date;
     private String description;
+    private String recipient;
 
     // Getters
     public Long getId() {
@@ -26,6 +27,10 @@ public class CommissionsDTO {
         return description;
     }
 
+    public String getRecipient() {
+        return recipient;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -41,5 +46,9 @@ public class CommissionsDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 } 

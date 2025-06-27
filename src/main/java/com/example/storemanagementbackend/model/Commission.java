@@ -20,6 +20,8 @@ public class Commission {
     @Column(length = 1000)
     private String description;
 
+    private String recipient;
+
     public Long getId() {
         return id;
     }
@@ -50,5 +52,13 @@ public class Commission {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 } 

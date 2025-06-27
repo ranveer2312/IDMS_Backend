@@ -4,6 +4,8 @@ import com.example.storemanagementbackend.dto.LeaveRequestDTO;
 import com.example.storemanagementbackend.model.LeaveRequest;
 import com.example.storemanagementbackend.repository.LeaveRequestRepository;
 import com.example.storemanagementbackend.service.LeaveRequestService;
+import com.example.storemanagementbackend.model.Employee;
+import com.example.storemanagementbackend.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
  
@@ -18,6 +20,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
  
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
+ 
+    @Autowired
+    private EmployeeRepository employeeRepository;
  
     @Override
     public LeaveRequestDTO submitLeaveRequest(LeaveRequestDTO dto) {
@@ -124,7 +129,24 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         LeaveRequestDTO dto = new LeaveRequestDTO();
         dto.setId(request.getId());
         dto.setEmployeeId(request.getEmployeeId());
-        dto.setEmployeeName(request.getEmployeeName());
+        // Fetch and map employee details
+        Employee emp = employeeRepository.findByEmployeeId(request.getEmployeeId()).orElse(null);
+        if (emp != null) {
+            dto.setEmployeeName(emp.getEmployeeName());
+            dto.setDepartment(emp.getDepartment());
+            dto.setEmail(emp.getEmail());
+            dto.setPhoneNumber(emp.getPhoneNumber());
+            dto.setBloodGroup(emp.getBloodGroup());
+            dto.setProfilePhotoUrl(emp.getProfilePhotoUrl());
+            dto.setCurrentAddress(emp.getCurrentAddress());
+            dto.setPermanentAddress(emp.getPermanentAddress());
+            dto.setPosition(emp.getPosition());
+            dto.setJoiningDate(emp.getJoiningDate());
+            dto.setRelievingDate(emp.getRelievingDate());
+            dto.setStatus(emp.getStatus());
+        } else {
+            dto.setEmployeeName(request.getEmployeeName());
+        }
         dto.setLeaveType(request.getLeaveType());
         dto.setStartDate(request.getStartDate());
         dto.setEndDate(request.getEndDate());

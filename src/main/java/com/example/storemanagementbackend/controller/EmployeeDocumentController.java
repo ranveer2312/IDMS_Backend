@@ -122,7 +122,7 @@ public class EmployeeDocumentController {
         EmployeeDocument document = new EmployeeDocument();
         document.setEmployeeId(employeeId);
         document.setDocumentType(docType.toUpperCase());
-        document.setFileName(file.getOriginalFilename());
+        document.setFileName(fileName);
         document.setFileType(file.getContentType());
         document.setSize(file.getSize());
         document.setFileDownloadUri(downloadUri);
@@ -170,6 +170,40 @@ public class EmployeeDocumentController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/download/{employeeId}/{fileType}")
+    public ResponseEntity<Resource> downloadDocumentByEmployeeIdAndType(
+            @PathVariable String employeeId,
+            @PathVariable String fileType,
+            HttpServletRequest request) {
+        List<EmployeeDocument> docs = documentRepository.findByEmployeeIdAndDocumentType(employeeId, fileType.toUpperCase());
+        if (docs.isEmpty()) {
+            System.out.println("No document found for employeeId: " + employeeId + ", fileType: " + fileType);
+            return ResponseEntity.notFound().build();
+        }
+        EmployeeDocument doc = docs.get(0);
+        Resource resource;
+        try {
+            resource = fileStorageService.loadFileAsResource(doc.getFileName());
+            if (resource == null || !resource.exists()) {
+                System.out.println("File not found: " + doc.getFileName());
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        String contentType;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (IOException ex) {
+            contentType = "application/octet-stream";
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 }
  

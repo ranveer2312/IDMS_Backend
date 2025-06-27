@@ -11,6 +11,8 @@ public class Salaries {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String employeeName;
+
     @Column(nullable = false)
     private BigDecimal amount;
 
@@ -26,6 +28,14 @@ public class Salaries {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 
     public BigDecimal getAmount() {

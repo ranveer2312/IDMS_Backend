@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public class SalariesDTO {
     private Long id;
+    private String employeeName;
     private BigDecimal amount;
     private LocalDate date;
     private String description;
@@ -15,6 +16,14 @@ public class SalariesDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 
     public BigDecimal getAmount() {
