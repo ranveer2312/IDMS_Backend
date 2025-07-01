@@ -9,6 +9,7 @@ import com.example.storemanagementbackend.repository.UserRepository;
 import com.example.storemanagementbackend.service.AuthService;
 import com.example.storemanagementbackend.service.JwtService;
 import com.example.storemanagementbackend.service.EmailService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,11 +33,14 @@ public class AuthController {
     private final JwtService jwtService;
     private final EmailService emailService;
 
+    // ✅ Enable CORS for frontend hosted on Vercel
+    @CrossOrigin(origins = "https://idmsproject.vercel.app")
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    @CrossOrigin(origins = "https://idmsproject.vercel.app")
     @PostMapping("/login")
     public ResponseEntity<?> unifiedLogin(@RequestBody AuthRequest request) {
         // 1. Try User table (admin, HR, etc.)
@@ -49,6 +53,7 @@ public class AuthController {
             response.setToken(token);
             return ResponseEntity.ok(response);
         }
+
         // 2. Try Employee table
         Employee employee = employeeRepository.findByEmail(request.getEmail()).orElse(null);
         if (employee != null && passwordEncoder.matches(request.getPassword(), employee.getPassword())) {
@@ -64,44 +69,45 @@ public class AuthController {
             response.setToken(token);
             return ResponseEntity.ok(response);
         }
+
         // 3. If neither, return error
         return ResponseEntity.status(401).body("Invalid email or password");
     }
 
+    @CrossOrigin(origins = "https://idmsproject.vercel.app")
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
-        // Generate a 6-digit OTP
         String otp = String.format("%06d", new Random().nextInt(999999));
-        // Send OTP email
         emailService.sendOtpEmail(email, otp);
-        // In a real app, save OTP to DB or cache for later verification
         return ResponseEntity.ok("Password reset instructions sent to your email.");
     }
 
+    @CrossOrigin(origins = "https://idmsproject.vercel.app")
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String otp = body.get("otp");
         String newPassword = body.get("newPassword");
-        // Simulate OTP validation (in real app, check against DB or cache)
+
         if (otp == null || otp.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid or missing OTP");
         }
-        // Try to find user by email
+
         User user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
             return ResponseEntity.ok("Password reset successful for user.");
         }
-        // Try to find employee by email
+
         Employee employee = employeeRepository.findByEmail(email).orElse(null);
         if (employee != null) {
             employee.setPassword(passwordEncoder.encode(newPassword));
             employeeRepository.save(employee);
             return ResponseEntity.ok("Password reset successful for employee.");
         }
+
         return ResponseEntity.status(404).body("Email not found");
     }
-} 
+}
