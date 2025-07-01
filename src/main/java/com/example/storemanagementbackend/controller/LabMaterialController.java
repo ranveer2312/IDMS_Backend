@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/store/lab/materials")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://idmsproject.vercel.app")
 public class LabMaterialController {
     private final LabMaterialService service;
 

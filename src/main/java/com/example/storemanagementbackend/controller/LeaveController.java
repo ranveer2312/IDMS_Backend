@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
  
 @RestController
 @RequestMapping("/api/leaves")
-@CrossOrigin(origins = "http://localhost:3000") // Allow React frontend
+@CrossOrigin(origins = "https://idmsproject.vercel.app") // Allow React frontend
 public class LeaveController {
  
     @Autowired

@@ -19,7 +19,7 @@ import com.example.storemanagementbackend.dto.EmployeeRegistrationRequest;
  
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/employees") // Base path for all endpoints in this controller
-@CrossOrigin(origins = "http://localhost:3000") // Allows requests from the specified origin (for frontend development)
+@CrossOrigin(origins = "https://idmsproject.vercel.app") // Allows requests from the specified origin (for frontend development)
 public class EmployeeController {
  
     private final EmployeeService employeeService;

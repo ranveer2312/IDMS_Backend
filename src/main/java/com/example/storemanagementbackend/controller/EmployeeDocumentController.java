@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  
 @RestController
 @RequestMapping("/api/hr")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://idmsproject.vercel.app")
 public class EmployeeDocumentController {
  
     @Autowired

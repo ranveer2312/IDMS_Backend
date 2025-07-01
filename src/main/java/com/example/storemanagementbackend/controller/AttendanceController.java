@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/attendance")
 // Add CORS if not already configured globally
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://idmsproject.vercel.app")
 public class AttendanceController {
  
     @Autowired

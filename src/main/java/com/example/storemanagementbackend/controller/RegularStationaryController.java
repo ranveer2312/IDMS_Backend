@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/store/stationary/regular")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://idmsproject.vercel.app")
 public class RegularStationaryController {
     @Autowired
     private RegularStationaryService service;

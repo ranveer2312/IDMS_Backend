@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
  */
 @RestController // Marks this class as a REST controller
 @RequestMapping("/api/performance-reviews") // Base path for all endpoints in this controller
-@CrossOrigin(origins = "http://localhost:3000") // Allows requests from the specified origin
+@CrossOrigin(origins = "https://idmsproject.vercel.app") // Allows requests from the specified origin
 public class PerformanceReviewController {
  
     private final PerformanceReviewService performanceReviewService;

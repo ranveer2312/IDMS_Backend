@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
  
 import java.util.List;
  
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://idmsproject.vercel.app")
 @RestController
 @RequestMapping("/api/assets")
 public class AssetController {
